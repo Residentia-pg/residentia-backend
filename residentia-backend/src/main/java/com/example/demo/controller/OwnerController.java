@@ -16,8 +16,8 @@ public class OwnerController {
     }
 
     // Fake logged-in owner (for now)
-    private Long getLoggedOwnerId() {
-        return 1L;
+    private Integer getLoggedOwnerId() {
+        return (int) 1L;
     }
 
     @GetMapping("/profile")
