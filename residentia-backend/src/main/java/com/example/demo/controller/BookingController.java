@@ -1,11 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Booking;
+
 import com.example.demo.entity.Owner;
-import com.example.demo.entity.Property;
+import com.example.demo.entity.Pg;
 import com.example.demo.service.BookingService;
 import com.example.demo.service.OwnerService;
-import com.example.demo.service.PropertyService;
+import com.example.demo.service.PgService;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -17,18 +18,18 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final OwnerService ownerService;
-    private final PropertyService propertyService;
+    private final PgService pgService;
 
     public BookingController(BookingService bookingService,
                              OwnerService ownerService,
-                             PropertyService propertyService) {
+                             PgService pgService) {
         this.bookingService = bookingService;
         this.ownerService = ownerService;
-        this.propertyService = propertyService;
+        this.pgService = pgService;
     }
 
-    private Long getLoggedOwnerId() {
-        return 1L;
+    private Integer getLoggedOwnerId() {
+        return (int) 1L;
     }
 
     @GetMapping
@@ -41,10 +42,10 @@ public class BookingController {
     public Booking createBooking(@RequestBody Booking booking) {
         Owner owner = ownerService.getOwner(getLoggedOwnerId());
 
-        Long propertyId = booking.getProperty().getId();
-        Property property = propertyService.getById(propertyId);
+        Integer pgId = booking.getPg().getId();
+        Pg pg = pgService.getById(pgId);
 
-        booking.setProperty(property);
+        booking.setPg(pg);
         booking.setOwner(owner);
         booking.setStatus("PENDING");
 

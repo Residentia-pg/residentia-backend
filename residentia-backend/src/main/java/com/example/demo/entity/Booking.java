@@ -19,12 +19,12 @@ public class Booking {
     private String status; // PENDING, CONFIRMED
 
     @ManyToOne
-    private Property property;
+    private Pg pg;
 
     @ManyToOne
     private Owner owner;
 
-    // Getters & Setters
+
     public Long getId() { return id; }
 
     public String getTenantName() { return tenantName; }
@@ -42,9 +42,11 @@ public class Booking {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public Property getProperty() { return property; }
-    public void setProperty(Property property) { this.property = property; }
+    public Pg getPg() { return pg; }
+    public void setPg(Pg pg) { this.pg = pg; }
 
     public Owner getOwner() { return owner; }
     public void setOwner(Owner owner) { this.owner = owner; }
+
+
 }

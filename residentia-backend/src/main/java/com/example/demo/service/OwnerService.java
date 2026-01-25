@@ -13,12 +13,12 @@ public class OwnerService {
         this.ownerRepository = ownerRepository;
     }
 
-    public Owner getOwner(Long id) {
+    public Owner getOwner(Integer id) {
         return ownerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
     }
 
-    public Owner updateOwner(Long id, Owner updated) {
+    public Owner updateOwner(Integer id, Owner updated) {
         Owner owner = getOwner(id);
         owner.setName(updated.getName());
         owner.setEmail(updated.getEmail());

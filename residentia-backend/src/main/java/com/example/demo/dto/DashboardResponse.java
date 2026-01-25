@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
-public class DashboardResponse {
-
-}
+public record DashboardResponse(	
+	long totalUsers,
+    long totalOwners,
+    long totalProperties,
+    long pendingVerifications) {}
