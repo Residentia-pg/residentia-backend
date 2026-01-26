@@ -1,10 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.Booking;
+import com.example.demo.entity.PgBooking;
 
 import com.example.demo.entity.Owner;
 import com.example.demo.entity.Pg;
-import com.example.demo.service.BookingService;
+import com.example.demo.service.PgBookingService;
 import com.example.demo.service.OwnerService;
 import com.example.demo.service.PgService;
 
@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
-@RequestMapping("/api/owner/bookings")
+@RequestMapping("/api/owner/pg-bookings")
 @CrossOrigin
 public class BookingController {
 
-    private final BookingService bookingService;
+    private final PgBookingService pgBookingService;
     private final OwnerService ownerService;
     private final PgService pgService;
 
-    public BookingController(BookingService bookingService,
+    public BookingController(PgBookingService pgBookingService,
                              OwnerService ownerService,
                              PgService pgService) {
-        this.bookingService = bookingService;
+        this.pgBookingService = pgBookingService;
         this.ownerService = ownerService;
         this.pgService = pgService;
     }
@@ -33,27 +33,25 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<Booking> getBookings() {
+    public List<PgBooking> getPgBookings() {
         Owner owner = ownerService.getOwner(getLoggedOwnerId());
-        return bookingService.getOwnerBookings(owner);
+        return pgBookingService.getOwnerBookings(owner);
     }
 
     @PostMapping
-    public Booking createBooking(@RequestBody Booking booking) {
-        Owner owner = ownerService.getOwner(getLoggedOwnerId());
+    public PgBooking createBooking(@RequestBody PgBooking pgBooking) {
 
-        Integer pgId = booking.getPg().getId();
+        Integer pgId = pgBooking.getPg().getId();
         Pg pg = pgService.getById(pgId);
 
-        booking.setPg(pg);
-        booking.setOwner(owner);
-        booking.setStatus("PENDING");
+        pgBooking.setPg(pg);
+        pgBooking.setStatus("PENDING");
 
-        return bookingService.save(booking);
+        return pgBookingService.save(pgBooking);
     }
 
     @PutMapping("/{id}/confirm")
-    public Booking confirm(@PathVariable Long id) {
-        return bookingService.confirmBooking(id);
+    public PgBooking confirm(@PathVariable Integer id) {
+        return pgBookingService.confirmBooking(id);
     }
 }

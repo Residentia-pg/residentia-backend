@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Owner;
-import com.example.demo.service.BookingService;
+import com.example.demo.service.PgBookingService;
 import com.example.demo.service.DashboardService;
 import com.example.demo.service.OwnerService;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +13,14 @@ public class DashboardController {
 
     private final OwnerService ownerService;
     private final DashboardService dashboardService;
-    private final BookingService bookingService;
+    private final PgBookingService pgBookingService;
 
     public DashboardController(OwnerService ownerService,
                                DashboardService dashboardService,
-                               BookingService bookingService) {
+                               PgBookingService pgBookingService) {
         this.ownerService = ownerService;
         this.dashboardService = dashboardService;
-        this.bookingService = bookingService;
+        this.pgBookingService = pgBookingService;
     }
 
     private Integer getLoggedOwnerId() {
@@ -34,7 +34,7 @@ public class DashboardController {
         return new Object() {
             public long totalProperties = dashboardService.getTotalProperties(owner);
             public long totalBookings = dashboardService.getTotalBookings(owner);
-            public Object recentBookings = bookingService.getOwnerBookings(owner);
+            public Object recentBookings = pgBookingService.getOwnerBookings(owner);
         };
     }
 }
