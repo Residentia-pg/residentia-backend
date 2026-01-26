@@ -4,19 +4,20 @@ import com.example.demo.entity.Pg;
 import com.example.demo.repository.PgRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pgs")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}) 
-public class PgController {
+@RequestMapping("/api/client")
+@CrossOrigin(origins = "http://localhost:3000")
+public class ClientController {
 
     @Autowired
     private PgRepository pgRepository;
 
-    @GetMapping("/all")
+    @GetMapping("/pgs")
     public List<Pg> getAllPgs() {
-        // डेटाबेसमधून सर्व PGs मिळवण्यासाठी
+        // Database madhle sagle PGs client la dakhvnyasathi
         return pgRepository.findAll();
     }
 }
