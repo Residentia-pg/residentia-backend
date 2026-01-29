@@ -1,0 +1,73 @@
+package com.residentia.service;
+
+import org.springframework.stereotype.Service;
+
+
+import com.residentia.entity.Pg;
+import com.residentia.entity.Request;
+import com.residentia.repository.PgRepository;
+import com.residentia.repository.RequestRepository;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+@Service
+public class AdminRequestService 
+{
+	private final RequestRepository requestRepo;
+    private final PgRepository pgRepo;
+    private final ObjectMapper objectMapper;
+    
+    public AdminRequestService(RequestRepository requestRepo,
+            PgRepository pgRepo,
+            ObjectMapper objectMapper) {
+	this.requestRepo = requestRepo;
+	this.pgRepo = pgRepo;
+	this.objectMapper = objectMapper;
+	}
+    
+    @Transactional
+    public Request approve(Integer id) {
+        Request req = requestRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
+
+//        Pg pg = req.getPg(); 
+
+        try {
+            JsonNode root = objectMapper.readTree(req.getChangeDetails());
+            
+            Integer newRent = root.has("rentAmount")
+                    ? root.get("rentAmount").asInt()
+                    : null;
+
+            String newCity = root.has("city")
+                    ? root.get("city").asText()
+                    : null;
+
+            int rows = pgRepo.applyPgUpdate(
+                    req.getPg().getId(),
+                    newRent,
+                    newCity
+            );
+
+            System.out.println("Rows updated in pgs = " + rows);
+
+            req.setStatus("APPROVED");
+            return requestRepo.save(req);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid changeDetails JSON", e);
+        }
+    }
+    
+    @Transactional
+    public Request reject(Integer id) {
+        Request req = requestRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        req.setStatus("REJECTED");
+        return requestRepo.save(req);
+    }
+}

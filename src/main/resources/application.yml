@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: residentia-backend
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/residentia_pg?createDatabaseIfNotExist=true
+    username: root
+    password: manager
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+  mvc:
+    cors:
+      allowed-origins: http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
+
+server:
+  port: 8888
+  servlet:
+    context-path: /
+
+jwt:
+  secret: my-super-secret-key-for-jwt-token-generation-residentia-application-2024-secure-512-bits-minimum-requirement
+  expiration: 86400000
+
+logging:
+  level:
+    com.residentia: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: DEBUG

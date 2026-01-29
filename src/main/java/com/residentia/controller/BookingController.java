@@ -1,0 +1,110 @@
+package com.residentia.controller;
+
+import com.residentia.dto.BookingDTO;
+import com.residentia.entity.Booking;
+import com.residentia.service.BookingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/owner")
+@Tag(name = "Booking Management", description = "APIs for Booking management")
+@CrossOrigin(origins = "*", maxAge = 3600)
+@SecurityRequirement(name = "Bearer Authentication")
+public class BookingController {
+
+    @Autowired
+    private BookingService bookingService;
+
+    @GetMapping("/bookings")
+    @Operation(summary = "Get all bookings of owner", description = "Retrieve all bookings for properties owned by logged-in owner")
+    @ApiResponse(responseCode = "200", description = "Bookings retrieved successfully")
+    public ResponseEntity<?> getOwnerBookings(HttpServletRequest request) {
+        try {
+            Long ownerId = (Long) request.getAttribute("ownerId");
+            if (ownerId == null) {
+                throw new RuntimeException("Owner ID not found in request");
+            }
+            List<BookingDTO> bookings = bookingService.getOwnerBookings(ownerId);
+            return ResponseEntity.ok(bookings);
+        } catch (Exception e) {
+            log.error("Failed to fetch bookings: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @GetMapping("/bookings/{bookingId}")
+    @Operation(summary = "Get booking by ID", description = "Retrieve specific booking details")
+    @ApiResponse(responseCode = "200", description = "Booking retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> getBookingById(@PathVariable Long bookingId) {
+        try {
+            BookingDTO booking = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            log.error("Failed to fetch booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @GetMapping("/property/{propertyId}/bookings")
+    @Operation(summary = "Get bookings for a property", description = "Retrieve all bookings for a specific property")
+    @ApiResponse(responseCode = "200", description = "Bookings retrieved successfully")
+    public ResponseEntity<?> getPropertyBookings(@PathVariable Long propertyId) {
+        try {
+            List<BookingDTO> bookings = bookingService.getPropertyBookings(propertyId);
+            return ResponseEntity.ok(bookings);
+        } catch (Exception e) {
+            log.error("Failed to fetch property bookings: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/bookings/{bookingId}")
+    @Operation(summary = "Update booking status", description = "Update booking details or status")
+    @ApiResponse(responseCode = "200", description = "Booking updated successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> updateBooking(@PathVariable Long bookingId, @RequestBody BookingDTO bookingDTO) {
+        try {
+            Booking booking = bookingService.updateBooking(bookingId, bookingDTO);
+
+            BookingDTO response = new BookingDTO();
+            response.setBookingId(booking.getId());
+            response.setPropertyId(booking.getProperty().getId());
+            response.setPropertyName(booking.getProperty().getPropertyName());
+            response.setStatus(booking.getStatus());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to update booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @DeleteMapping("/bookings/{bookingId}")
+    @Operation(summary = "Delete booking", description = "Delete a booking record")
+    @ApiResponse(responseCode = "200", description = "Booking deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> deleteBooking(@PathVariable Long bookingId) {
+        try {
+            bookingService.deleteBooking(bookingId);
+            return ResponseEntity.ok(new MessageResponse("Booking deleted successfully"));
+        } catch (Exception e) {
+            log.error("Failed to delete booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+}
