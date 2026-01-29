@@ -73,6 +73,14 @@ public class AdminRequestService {
     public Request createChangeRequest(Request request) {
         // Ensure status is set to PENDING
         request.setStatus("PENDING");
+        
+        // Ensure property and owner are properly loaded
+        if (request.getProperty() != null) {
+            Property property = propertyRepository.findById(request.getProperty().getId())
+                    .orElseThrow(() -> new RuntimeException("Property not found"));
+            request.setProperty(property);
+        }
+        
         log.info("Creating change request for property {} with status PENDING", request.getProperty().getId());
         return requestRepository.save(request);
     }

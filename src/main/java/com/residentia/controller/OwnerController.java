@@ -159,18 +159,13 @@ public class OwnerController {
             String email = authentication.getName();
             OwnerDTO ownerDTO = ownerService.getOwnerByEmail(email);
             
-            // Validate that the property belongs to this owner
-            if (!changeRequest.getProperty().getOwner().getId().equals(ownerDTO.getId())) {
-                log.warn("Owner {} attempted to create change request for property not owned by them", email);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse("You can only create requests for your own properties"));
-            }
-            
             // Ensure change type is set
             if (changeRequest.getChangeType() == null) {
                 changeRequest.setChangeType("UPDATE");
             }
             
             // Create the change request with PENDING status
+            // The service will reload the property with proper relationships
             Request savedRequest = adminRequestService.createChangeRequest(changeRequest);
             log.info("Change request created successfully for property {} by owner {}", 
                 changeRequest.getProperty().getId(), email);
