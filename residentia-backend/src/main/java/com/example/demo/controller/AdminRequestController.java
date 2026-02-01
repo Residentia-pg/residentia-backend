@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.example.demo.entity.Request;
 import com.example.demo.repository.RequestRepository;
 
 @RestController
 @RequestMapping("/api/admin/change-requests")
+@CrossOrigin
 public class AdminRequestController {
 
     private final RequestRepository repo;
@@ -21,13 +23,13 @@ public class AdminRequestController {
         this.repo = repo;
     }
 
-    //getting all requests
+    // getting all requests
     @GetMapping
     public List<Request> getAll() {
         return repo.findAll();
     }
 
-    //Approve request
+    // Approve request
     @PutMapping("/{id}/approve")
     public Request approve(@PathVariable Integer id) {
         Request r = repo.findById(id).orElseThrow();

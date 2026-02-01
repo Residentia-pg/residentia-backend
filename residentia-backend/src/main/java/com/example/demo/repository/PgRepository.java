@@ -1,16 +1,19 @@
 package com.example.demo.repository;
 
+import com.example.demo.entity.Pg;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+@Repository
+public interface PgRepository extends JpaRepository<Pg, Integer> {
+    List<Pg> findByLocationContainingIgnoreCase(String location);
 
-import com.example.demo.entity.PgBooking;
-import com.example.demo.entity.Owner;
-import com.example.demo.entity.Pg;
+    List<Pg> findByOwnerEmail(String ownerEmail);
 
-public interface PgRepository extends JpaRepository<Pg,Integer>
-{
-	long countByStatus(String status);
+    // Find only ACTIVE PGs for client-facing API
+    List<Pg> findByStatus(String status);
 
-	List<Pg> findByOwner(Owner owner);
+    List<Pg> findByStatusAndLocationContainingIgnoreCase(String status, String location);
 }

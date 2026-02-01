@@ -13,16 +13,16 @@ public class DashboardService {
     private final PgBookingRepository pgBookingRepository;
 
     public DashboardService(PgRepository pgRepository,
-                            PgBookingRepository pgBookingRepository) {
+            PgBookingRepository pgBookingRepository) {
         this.pgRepository = pgRepository;
         this.pgBookingRepository = pgBookingRepository;
     }
 
     public long getTotalProperties(Owner owner) {
-        return pgRepository.findByOwner(owner).size();
+        return pgRepository.findByOwnerEmail(owner.getEmail()).size();
     }
 
     public long getTotalBookings(Owner owner) {
-        return pgBookingRepository.findByPgOwner(owner).size();
+        return pgBookingRepository.findByPgIdOwnerEmail(owner.getEmail()).size();
     }
 }

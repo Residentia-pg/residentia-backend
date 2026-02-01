@@ -9,25 +9,23 @@ import com.example.demo.entity.PgBooking;
 import com.example.demo.repository.PgBookingRepository;
 
 @Service
-public class PgBookingService 
-{
-	private final PgBookingRepository pgBookingRepository;
+public class PgBookingService {
+    private final PgBookingRepository pgBookingRepository;
 
     public PgBookingService(PgBookingRepository pgBookingRepository) {
         this.pgBookingRepository = pgBookingRepository;
     }
-    
+
     public List<PgBooking> getAllBookings() {
         return pgBookingRepository.findAll();
     }
-    
+
     public PgBooking save(PgBooking pgBooking) {
         return pgBookingRepository.save(pgBooking);
     }
 
-
     public List<PgBooking> getOwnerBookings(Owner owner) {
-        return pgBookingRepository.findByPgOwner(owner);
+        return pgBookingRepository.findByPgIdOwnerEmail(owner.getEmail());
     }
 
     public PgBooking cancelBooking(Integer id) {
@@ -36,7 +34,7 @@ public class PgBookingService
         pgBooking.setStatus("CANCELLED");
         return pgBookingRepository.save(pgBooking);
     }
-    
+
     public PgBooking confirmBooking(Integer id) {
 
         PgBooking pgBooking = pgBookingRepository.findById(id)

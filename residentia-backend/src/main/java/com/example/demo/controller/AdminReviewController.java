@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.example.demo.entity.Review;
 import com.example.demo.repository.ReviewRepository;
 
 @RestController
 @RequestMapping("/api/admin/reviews")
+@CrossOrigin
 public class AdminReviewController {
 
     private final ReviewRepository reviewRepo;
@@ -22,13 +24,13 @@ public class AdminReviewController {
         this.reviewRepo = reviewRepo;
     }
 
-    //getting all reviews
+    // getting all reviews
     @GetMapping
     public List<Review> getAll() {
         return reviewRepo.findAll();
     }
 
-    //Approving review
+    // Approving review
     @PutMapping("/{id}/approve")
     public Review approve(@PathVariable Integer id) {
         Review r = reviewRepo.findById(id).orElseThrow();
@@ -36,10 +38,9 @@ public class AdminReviewController {
         return reviewRepo.save(r);
     }
 
-    //Delete review
+    // Delete review
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         reviewRepo.deleteById(id);
     }
 }
-

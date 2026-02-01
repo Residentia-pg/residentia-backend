@@ -1,78 +1,176 @@
 package com.example.demo.entity;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import lombok.Data;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-
-
-@Getter
-@Setter
 @Entity
-@Table(name="pgs")
-public class Pg 
-{
-	@Id
+@Table(name = "pgs")
+public class Pg {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	
+    @JsonProperty("id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private Owner owner;
+    @JsonProperty("propertyName")
+    private String name;
+    private String location;
 
-    @Column(name="property_name")
-    private String propertyName;
-    
-    @Column(name="address")
+    @JsonProperty("rentAmount")
+    private Double price;
+    private String sharingType; // "1-sharing", "2-sharing", "3-sharing"
+
+    private String amenities;
     private String address;
-    
     private String city;
     private String state;
-    
-    @Column(name="rent_amount")
-    private Integer rentAmount;
-    
-    @Column(name="sharing_type")
-    private String sharingType;
-    
-    @Column(name="max_capacity")
-    private Integer maxCapacity;
-
-    @Column(name="available_beds")
-    private Integer availableBeds;
-
-    @Column(name="food_included")
-    private Boolean foodIncluded=false;
-    
     private String pincode;
+    private Integer maxCapacity;
+    private Integer availableBeds;
+    private Boolean foodIncluded;
+    private String ownerEmail;
+    @Column(length = 2000)
+    private String imageUrl;
 
-    private String status; // PENDING, ACTIVE, REJECTED
+    @Column(length = 2000)
+    private String description;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public Integer getId() {
+        return id;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public void setId(Integer id) {
+        this.id = id;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public String getSharingType() {
+        return sharingType;
+    }
+
+    public void setSharingType(String sharingType) {
+        this.sharingType = sharingType;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+
+    public void setAmenities(String amenities) {
+        this.amenities = amenities;
+    }
+
+    public Boolean getFoodIncluded() {
+        return foodIncluded;
+    }
+
+    public void setFoodIncluded(Boolean foodIncluded) {
+        this.foodIncluded = foodIncluded;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
+    private String status = "PENDING"; // PENDING, ACTIVE, REJECTED
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public Integer getAvailableBeds() {
+        return availableBeds;
+    }
+
+    public void setAvailableBeds(Integer availableBeds) {
+        this.availableBeds = availableBeds;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 }

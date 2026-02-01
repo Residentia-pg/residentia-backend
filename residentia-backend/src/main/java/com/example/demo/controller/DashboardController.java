@@ -16,8 +16,8 @@ public class DashboardController {
     private final PgBookingService pgBookingService;
 
     public DashboardController(OwnerService ownerService,
-                               DashboardService dashboardService,
-                               PgBookingService pgBookingService) {
+            DashboardService dashboardService,
+            PgBookingService pgBookingService) {
         this.ownerService = ownerService;
         this.dashboardService = dashboardService;
         this.pgBookingService = pgBookingService;

@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.example.demo.entity.Pg;
 import com.example.demo.repository.PgRepository;
 
 @RestController
 @RequestMapping("/api/admin/pgs")
+@CrossOrigin
 public class AdminPgController {
 
     private final PgRepository pgRepo;
@@ -40,4 +42,3 @@ public class AdminPgController {
         pgRepo.save(pg);
     }
 }
-

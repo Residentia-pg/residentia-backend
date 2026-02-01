@@ -6,37 +6,92 @@ import jakarta.persistence.*;
 @Table(name = "pg_owners")
 public class Owner {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    private String name;
-    private String email;
-    private String password_hash;
-    private String mobile_number;
-    private String address;
-    private String bussiness_name;
+	private String name;
 
-    private String role = "OWNER";
-    
-	
+	@Column(unique = true, nullable = false)
+	private String email;
+
+	@Column(name = "password_hash", nullable = false)
+	private String passwordHash;
+
+	@Column(name = "mobile_number", nullable = false)
+	private String mobileNumber;
+
+	private String address;
+	private String city;
+	private String state;
+	private String pincode;
+
+	@Column(name = "business_name")
+	private String businessName;
+
+	@Column(name = "management_company")
+	private String managementCompany;
+
+	@Column(name = "aadhar_or_pan")
+	private String aadharOrPan;
+
+	@Column(name = "identity_doc_url")
+	private String identityDocUrl;
+
+	@Column(name = "bank_account")
+	private String bankAccount;
+
+	private String ifsc;
+
+	private String role = "OWNER";
 
 	@Column(name = "verification_status")
-    private String verificationStatus;
-	
-	@Column(name = "is_active",nullable = false)
-	private Boolean IsActive=false;
+	private String verificationStatus = "PENDING";
 
-    
+	@Column(name = "is_active", nullable = false)
+	private Boolean isActive = false;
 
-	// Getters & Setters
-	
-	public String getMobile_number() {
-		return mobile_number;
+	public Owner() {
 	}
 
-	public void setMobile_number(String mobile_number) {
-		this.mobile_number = mobile_number;
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPasswordHash() {
+		return passwordHash;
+	}
+
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
+	}
+
+	public String getMobileNumber() {
+		return mobileNumber;
+	}
+
+	public void setMobileNumber(String mobileNumber) {
+		this.mobileNumber = mobileNumber;
 	}
 
 	public String getAddress() {
@@ -47,22 +102,86 @@ public class Owner {
 		this.address = address;
 	}
 
-	public String getBussiness_name() {
-		return bussiness_name;
+	public String getCity() {
+		return city;
 	}
 
-	public void setBussiness_name(String bussiness_name) {
-		this.bussiness_name = bussiness_name;
-	}
-	
-	public Boolean getIsActive() {
-		return IsActive;
+	public void setCity(String city) {
+		this.city = city;
 	}
 
-	public void setIsActive(Boolean isActive) {
-		IsActive = isActive;
+	public String getState() {
+		return state;
 	}
-	
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getPincode() {
+		return pincode;
+	}
+
+	public void setPincode(String pincode) {
+		this.pincode = pincode;
+	}
+
+	public String getBusinessName() {
+		return businessName;
+	}
+
+	public void setBusinessName(String businessName) {
+		this.businessName = businessName;
+	}
+
+	public String getManagementCompany() {
+		return managementCompany;
+	}
+
+	public void setManagementCompany(String managementCompany) {
+		this.managementCompany = managementCompany;
+	}
+
+	public String getAadharOrPan() {
+		return aadharOrPan;
+	}
+
+	public void setAadharOrPan(String aadharOrPan) {
+		this.aadharOrPan = aadharOrPan;
+	}
+
+	public String getIdentityDocUrl() {
+		return identityDocUrl;
+	}
+
+	public void setIdentityDocUrl(String identityDocUrl) {
+		this.identityDocUrl = identityDocUrl;
+	}
+
+	public String getBankAccount() {
+		return bankAccount;
+	}
+
+	public void setBankAccount(String bankAccount) {
+		this.bankAccount = bankAccount;
+	}
+
+	public String getIfsc() {
+		return ifsc;
+	}
+
+	public void setIfsc(String ifsc) {
+		this.ifsc = ifsc;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	public String getVerificationStatus() {
 		return verificationStatus;
 	}
@@ -71,22 +190,36 @@ public class Owner {
 		this.verificationStatus = verificationStatus;
 	}
 
-    public Integer getId() { return id; }
+	public Boolean getIsActive() {
+		return isActive;
+	}
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+	// Legacy Adapters for frontend fields and service methods
+	public String getPassword() {
+		return passwordHash;
+	}
 
-    public String getPassword() { return password_hash; }
-    public void setPassword(String password) { this.password_hash = password; }
+	public void setPassword(String password) {
+		this.passwordHash = password;
+	}
 
-    public String getPhone() { return mobile_number; }
-    public void setPhone(String phone) { this.mobile_number = phone; }
+	public String getMobile() {
+		return mobileNumber;
+	}
 
-    public String getCity() { return address; }
-    public void setCity(String city) { this.address = city; }
+	public void setMobile(String mobile) {
+		this.mobileNumber = mobile;
+	}
 
-    public String getRole() { return role; }
+	public String getPhone() {
+		return mobileNumber;
+	}
+
+	public void setPhone(String phone) {
+		this.mobileNumber = phone;
+	}
 }

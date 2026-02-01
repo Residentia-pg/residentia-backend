@@ -17,18 +17,18 @@ public class PgService {
     }
 
     public Pg addProperty(Pg pg, Owner owner) {
-        pg.setOwner(owner);
+        pg.setOwnerEmail(owner.getEmail());
         return pgRepository.save(pg);
     }
 
     public List<Pg> getOwnerProperties(Owner owner) {
-        return pgRepository.findByOwner(owner);
+        return pgRepository.findByOwnerEmail(owner.getEmail());
     }
 
     public void deleteProperty(Integer id) {
         pgRepository.deleteById(id);
     }
-    
+
     public Pg getById(Integer id) {
         return pgRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
