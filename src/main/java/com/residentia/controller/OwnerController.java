@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -45,7 +46,7 @@ public class OwnerController {
         log.info("Owner registration request: {}", registrationDTO.getEmail());
         try {
             Owner owner = ownerService.registerOwner(registrationDTO);
-            String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail());
+            String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail(), "OWNER");
 
             AuthResponseDTO response = new AuthResponseDTO();
             response.setOwnerId(owner.getId());

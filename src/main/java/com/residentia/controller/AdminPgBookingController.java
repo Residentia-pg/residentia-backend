@@ -25,9 +25,7 @@ public class AdminPgBookingController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Booking>> getAll() { 
-        // Assuming BookingService has a getAllBookings or similar method. 
-        // Since original had getAllBookings(), keeping it.
+    public ResponseEntity<List<com.residentia.dto.BookingDTO>> getAll() {
         return ResponseEntity.ok(service.getAllBookings());
     }
     

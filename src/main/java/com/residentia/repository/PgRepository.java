@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.demo.entity.PgBooking;
-import com.example.demo.entity.Owner;
-import com.example.demo.entity.Pg;
+import com.residentia.entity.Booking;
+import com.residentia.entity.Owner;
+import com.residentia.entity.Property;
 
 
 public interface PgRepository extends JpaRepository<Pg,Integer>

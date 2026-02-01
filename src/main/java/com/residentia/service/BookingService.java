@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,18 @@ public class BookingService {
 
         Booking booking = new Booking();
         booking.setProperty(property);
+
+        // Tenant info
+        booking.setTenantName(bookingDTO.getTenantName());
+        booking.setTenantEmail(bookingDTO.getTenantEmail());
+        booking.setTenantPhone(bookingDTO.getTenantPhone());
+
+        // Dates & amount
+        if (bookingDTO.getCheckInDate() != null) booking.setCheckInDate(bookingDTO.getCheckInDate());
+        if (bookingDTO.getCheckOutDate() != null) booking.setCheckOutDate(bookingDTO.getCheckOutDate());
+        booking.setAmount(bookingDTO.getAmount() != null ? bookingDTO.getAmount() : 0.0);
+        booking.setNotes(bookingDTO.getNotes());
+
         booking.setStatus(bookingDTO.getStatus() != null ? bookingDTO.getStatus() : "PENDING");
 
         return bookingRepository.save(booking);
@@ -43,8 +56,17 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
         if (bookingDTO.getStatus() != null) booking.setStatus(bookingDTO.getStatus());
+        if (bookingDTO.getCheckInDate() != null) booking.setCheckInDate(bookingDTO.getCheckInDate());
+        if (bookingDTO.getCheckOutDate() != null) booking.setCheckOutDate(bookingDTO.getCheckOutDate());
+        if (bookingDTO.getAmount() != null) booking.setAmount(bookingDTO.getAmount());
+        if (bookingDTO.getNotes() != null) booking.setNotes(bookingDTO.getNotes());
 
         return bookingRepository.save(booking);
+    }
+
+    public List<BookingDTO> getBookingsByClientEmail(String email) {
+        List<Booking> bookings = bookingRepository.findByTenantEmail(email);
+        return bookings.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     public BookingDTO getBookingById(Long bookingId) {
@@ -82,8 +104,9 @@ public class BookingService {
         bookingRepository.delete(booking);
     }
 
-    public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+    public List<BookingDTO> getAllBookings() {
+        List<Booking> bookings = bookingRepository.findAll();
+        return bookings.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     public Booking cancelBooking(Long bookingId) {
@@ -102,12 +125,34 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    // ✅ UPDATED: Enhanced convertToDTO with canReview logic
     private BookingDTO convertToDTO(Booking booking) {
         BookingDTO dto = new BookingDTO();
         dto.setBookingId(booking.getId());
-        dto.setPropertyId(booking.getProperty().getId());
-        dto.setPropertyName(booking.getProperty().getPropertyName());
+        
+        if (booking.getProperty() != null) {
+            dto.setPropertyId(booking.getProperty().getId());
+            dto.setPropertyName(booking.getProperty().getPropertyName());
+        }
+        
+        dto.setTenantName(booking.getTenantName());
+        dto.setTenantEmail(booking.getTenantEmail());
+        dto.setTenantPhone(booking.getTenantPhone());
+        dto.setBookingDate(booking.getBookingDate());
+        dto.setCheckInDate(booking.getCheckInDate());
+        dto.setCheckOutDate(booking.getCheckOutDate());
+        dto.setAmount(booking.getAmount());
         dto.setStatus(booking.getStatus());
+        dto.setNotes(booking.getNotes());
+        
+        // ✅ Set canReview flag
+        // Logic: Can review if booking is CONFIRMED and checkout date has passed
+        boolean canReview = false;
+        if ("CONFIRMED".equals(booking.getStatus()) && booking.getCheckOutDate() != null) {
+            canReview = booking.getCheckOutDate().isBefore(LocalDateTime.now());
+        }
+        dto.setCanReview(canReview);
+        
         return dto;
     }
 }

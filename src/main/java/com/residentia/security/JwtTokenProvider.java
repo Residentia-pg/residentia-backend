@@ -1,102 +1,98 @@
 package com.residentia.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:my-super-secret-key-for-jwt-token-generation-residentia-application-2024-secure-512-bits-minimum-requirement}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration:86400000}")
-    private int jwtExpiration;
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
-    public String generateToken(Long ownerId, String email) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
+    public String generateToken(Long id, String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
-                .claim("ownerId", ownerId)
+                .claim("id", id)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getSubject();
-        } catch (Exception e) {
-            log.error("Error extracting email from token: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    public Long getOwnerIdFromToken(String token) {
-        try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            Object ownerId = claims.get("ownerId");
-            if (ownerId instanceof Integer) {
-                return ((Integer) ownerId).longValue();
-            }
-            return (Long) ownerId;
-        } catch (Exception e) {
-            log.error("Error extracting ownerId from token: {}", e.getMessage());
-            return null;
-        }
+    public String generateToken(Long id, String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("id", id)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            if (token == null || token.isEmpty()) {
-                log.warn("Token is null or empty");
-                return false;
-            }
-            
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
             Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
-            
-            log.debug("Token validated successfully");
             return true;
-        } catch (io.jsonwebtoken.security.SignatureException e) {
-            log.error("Invalid JWT signature: {}", e.getMessage());
-            return false;
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            log.error("JWT token expired: {}", e.getMessage());
-            return false;
-        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-            log.error("Unsupported JWT token: {}", e.getMessage());
-            return false;
-        } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty: {}", e.getMessage());
-            return false;
-        } catch (Exception e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
-            return false;
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.warn("JWT unsupported: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.warn("JWT malformed: {}", e.getMessage());
+        } catch (SignatureException e) {
+            log.warn("JWT signature validation failed: {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("JWT invalid: {}", e.getMessage());
         }
+        return false;
+    }
+
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public Long getOwnerIdFromToken(String token) {
+        Object id = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("id");
+
+        return id == null ? null : Long.valueOf(id.toString());
+    }
+
+    public String getRoleFromToken(String token) {
+        Object role = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role");
+
+        return role == null ? null : role.toString();
     }
 }
