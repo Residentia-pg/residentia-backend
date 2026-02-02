@@ -9,4 +9,10 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
     List<Review> findByProperty(Property property);
+     
+    List<Review> findByPropertyAndStatus(Property property, String status);
+
+    List<Review> findByStatus(String status);
+
+    long countByStatus(String status);
 }

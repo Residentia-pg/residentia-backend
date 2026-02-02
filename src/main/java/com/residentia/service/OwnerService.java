@@ -62,23 +62,15 @@ public class OwnerService {
         Owner owner = ownerOptional.get();
         log.debug("Owner found: {}", owner.getEmail());
 
-        if (!passwordEncoder.matches(loginDTO.getPasswordHash(), owner.getPasswordHash())) {
+        if (!passwordEncoder.matches(loginDTO.getPassword(), owner.getPasswordHash())) {
             log.warn("Password mismatch for owner: {}", loginDTO.getEmail());
             throw new UnauthorizedException("Invalid email or password");
         }
 
-        String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail());
+        // include role so filter can pick it up and set ownerId when role==OWNER
+        String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail(), "OWNER");
         log.info("Owner login successful: {} (ID: {})", owner.getEmail(), owner.getId());
         return token;
-    }
-
-    public OwnerDTO getOwnerById(Long ownerId) {
-        log.info("Fetching owner with id: {}", ownerId);
-        
-        Owner owner = ownerRepository.findById(ownerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
-        
-        return convertToDTO(owner);
     }
 
     public OwnerDTO getOwnerByEmail(String email) {
@@ -86,6 +78,15 @@ public class OwnerService {
         
         Owner owner = ownerRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with email: " + email));
+        
+        return convertToDTO(owner);
+    }
+
+    public OwnerDTO getOwnerById(Long ownerId) {
+        log.info("Fetching owner with id: {}", ownerId);
+        
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
         
         return convertToDTO(owner);
     }

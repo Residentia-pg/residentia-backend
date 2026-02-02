@@ -1,11 +1,14 @@
 package com.residentia.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.residentia.dto.PropertyDTO;
 import com.residentia.entity.Owner;
 import com.residentia.entity.Property;
+import com.residentia.entity.Request;
 import com.residentia.exception.ResourceNotFoundException;
 import com.residentia.repository.OwnerRepository;
 import com.residentia.repository.PropertyRepository;
+import com.residentia.repository.RequestRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,9 @@ public class PropertyService {
 
     @Autowired
     private OwnerRepository ownerRepository;
+
+    @Autowired
+    private RequestRepository requestRepository;
 
     public Property createProperty(Long ownerId, PropertyDTO propertyDTO) {
         log.info("Creating property for owner: {}", ownerId);
@@ -49,11 +55,79 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
-    public Property updateProperty(Long propertyId, PropertyDTO propertyDTO) {
-        log.info("Updating property: {}", propertyId);
+    public Request createPropertyRequest(Long ownerId, PropertyDTO propertyDTO) {
+        log.info("Creating property request for owner: {}", ownerId);
+
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+
+        // Create a temporary property object (not saved) to attach to the request
+        Property tempProperty = new Property();
+        tempProperty.setOwner(owner);
+        tempProperty.setPropertyName(propertyDTO.getPropertyName());
+        tempProperty.setStatus("PENDING");
+        tempProperty = propertyRepository.save(tempProperty); // Save with minimal info
+
+        // Create request with property details in JSON
+        Request request = new Request();
+        request.setProperty(tempProperty);
+        request.setOwner(owner);
+        request.setChangeType("CREATE");
+        request.setStatus("PENDING");
+
+        // Store property details as JSON in changeDetails
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            request.setChangeDetails(mapper.writeValueAsString(propertyDTO));
+        } catch (Exception e) {
+            log.error("Failed to serialize property details", e);
+            throw new RuntimeException("Failed to create property request", e);
+        }
+
+        return requestRepository.save(request);
+    }
+
+    public Request createPropertyUpdateRequest(Long ownerId, Long propertyId, PropertyDTO propertyDTO) {
+        log.info("Creating property update request for property: {} by owner: {}", propertyId, ownerId);
+
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
 
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
+
+        // Verify that the property belongs to the owner
+        if (!property.getOwner().getId().equals(ownerId)) {
+            throw new RuntimeException("Property does not belong to this owner");
+        }
+
+        // Create request with property update details in JSON
+        Request request = new Request();
+        request.setProperty(property);
+        request.setOwner(owner);
+        request.setChangeType("UPDATE");
+        request.setStatus("PENDING");
+
+        // Store property update details as JSON in changeDetails
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            request.setChangeDetails(mapper.writeValueAsString(propertyDTO));
+        } catch (Exception e) {
+            log.error("Failed to serialize property update details", e);
+            throw new RuntimeException("Failed to create property update request", e);
+        }
+
+        return requestRepository.save(request);
+    }
+
+    public Property updateProperty(Long propertyId, PropertyDTO propertyDTO) {
+        log.info("🔄 Updating property: {}", propertyId);
+        log.info("📥 Received imageUrl: {}", propertyDTO.getImageUrl());
+
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
+
+        log.info("📷 Current imageUrl: {}", property.getImageUrl());
 
         if (propertyDTO.getPropertyName() != null) property.setPropertyName(propertyDTO.getPropertyName());
         if (propertyDTO.getAddress() != null) property.setAddress(propertyDTO.getAddress());
@@ -68,9 +142,14 @@ public class PropertyService {
         if (propertyDTO.getDescription() != null) property.setDescription(propertyDTO.getDescription());
         if (propertyDTO.getStatus() != null) property.setStatus(propertyDTO.getStatus());
         if (propertyDTO.getAmenities() != null) property.setAmenities(propertyDTO.getAmenities());
-        if (propertyDTO.getImageUrl() != null) property.setImageUrl(propertyDTO.getImageUrl());
+        if (propertyDTO.getImageUrl() != null) {
+            log.info("📷 Updating imageUrl from {} to {}", property.getImageUrl(), propertyDTO.getImageUrl());
+            property.setImageUrl(propertyDTO.getImageUrl());
+        }
 
-        return propertyRepository.save(property);
+        Property savedProperty = propertyRepository.save(property);
+        log.info("✅ Property saved with imageUrl: {}", savedProperty.getImageUrl());
+        return savedProperty;
     }
 
     public PropertyDTO getPropertyById(Long propertyId) {

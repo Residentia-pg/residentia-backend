@@ -1,30 +1,26 @@
 package com.residentia.controller;
 
 import com.residentia.dto.BookingDTO;
-import com.residentia.entity.Booking;
 import com.residentia.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/owner")
 @Tag(name = "Booking Management", description = "APIs for Booking management")
 @CrossOrigin(origins = "*", maxAge = 3600)
 @SecurityRequirement(name = "Bearer Authentication")
 public class BookingController {
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     @Autowired
     private BookingService bookingService;
@@ -41,7 +37,7 @@ public class BookingController {
             List<BookingDTO> bookings = bookingService.getOwnerBookings(ownerId);
             return ResponseEntity.ok(bookings);
         } catch (Exception e) {
-            log.error("Failed to fetch bookings: {}", e.getMessage());
+            logger.error("Failed to fetch bookings: {}", e.getMessage());
             throw e;
         }
     }
@@ -55,7 +51,7 @@ public class BookingController {
             BookingDTO booking = bookingService.getBookingById(bookingId);
             return ResponseEntity.ok(booking);
         } catch (Exception e) {
-            log.error("Failed to fetch booking: {}", e.getMessage());
+            logger.error("Failed to fetch booking: {}", e.getMessage());
             throw e;
         }
     }
@@ -68,7 +64,7 @@ public class BookingController {
             List<BookingDTO> bookings = bookingService.getPropertyBookings(propertyId);
             return ResponseEntity.ok(bookings);
         } catch (Exception e) {
-            log.error("Failed to fetch property bookings: {}", e.getMessage());
+            logger.error("Failed to fetch property bookings: {}", e.getMessage());
             throw e;
         }
     }
@@ -79,17 +75,42 @@ public class BookingController {
     @ApiResponse(responseCode = "404", description = "Booking not found")
     public ResponseEntity<?> updateBooking(@PathVariable Long bookingId, @RequestBody BookingDTO bookingDTO) {
         try {
-            Booking booking = bookingService.updateBooking(bookingId, bookingDTO);
-
-            BookingDTO response = new BookingDTO();
-            response.setBookingId(booking.getId());
-            response.setPropertyId(booking.getProperty().getId());
-            response.setPropertyName(booking.getProperty().getPropertyName());
-            response.setStatus(booking.getStatus());
-
+            BookingDTO response = bookingService.getBookingById(bookingId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Failed to update booking: {}", e.getMessage());
+            logger.error("Failed to update booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/bookings/{bookingId}/confirm")
+    @Operation(summary = "Confirm booking", description = "Owner confirms a pending booking")
+    @ApiResponse(responseCode = "200", description = "Booking confirmed successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId) {
+        try {
+            logger.info("Owner confirming booking: {}", bookingId);
+            bookingService.restoreBooking(bookingId);
+            BookingDTO response = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Failed to confirm booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/bookings/{bookingId}/reject")
+    @Operation(summary = "Reject booking", description = "Owner rejects a pending booking")
+    @ApiResponse(responseCode = "200", description = "Booking rejected successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId) {
+        try {
+            logger.info("Owner rejecting booking: {}", bookingId);
+            bookingService.cancelBooking(bookingId);
+            BookingDTO response = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Failed to reject booking: {}", e.getMessage());
             throw e;
         }
     }
@@ -101,9 +122,9 @@ public class BookingController {
     public ResponseEntity<?> deleteBooking(@PathVariable Long bookingId) {
         try {
             bookingService.deleteBooking(bookingId);
-            return ResponseEntity.ok(new MessageResponse("Booking deleted successfully"));
+            return ResponseEntity.ok("Booking deleted successfully");
         } catch (Exception e) {
-            log.error("Failed to delete booking: {}", e.getMessage());
+            logger.error("Failed to delete booking: {}", e.getMessage());
             throw e;
         }
     }

@@ -3,6 +3,7 @@ package com.residentia.controller;
 import com.residentia.dto.*;
 import com.residentia.entity.Owner;
 import com.residentia.entity.Request;
+import com.residentia.logging.ActionLogger;
 import com.residentia.security.JwtTokenProvider;
 import com.residentia.service.OwnerService;
 import com.residentia.service.AdminRequestService;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -37,6 +39,9 @@ public class OwnerController {
     @Autowired
     private PropertyRepository propertyRepository;
 
+    @Autowired
+    private ActionLogger actionLogger;
+
     @PostMapping("/register")
     @Operation(summary = "Register a new owner", description = "Create a new owner account with all required details")
     @ApiResponse(responseCode = "201", description = "Owner registered successfully")
@@ -45,7 +50,15 @@ public class OwnerController {
         log.info("Owner registration request: {}", registrationDTO.getEmail());
         try {
             Owner owner = ownerService.registerOwner(registrationDTO);
-            String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail());
+            String token = jwtTokenProvider.generateToken(owner.getId(), owner.getEmail(), "OWNER");
+
+            // Log owner registration
+            actionLogger.logOwnerAction(
+                owner.getId(),
+                owner.getEmail(),
+                "OWNER_REGISTRATION",
+                String.format("Name: %s, Phone: %s", owner.getName(), owner.getMobileNumber())
+            );
 
             AuthResponseDTO response = new AuthResponseDTO();
             response.setOwnerId(owner.getId());
@@ -57,6 +70,7 @@ public class OwnerController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
             log.error("Registration failed: {}", e.getMessage());
+            actionLogger.logError("OWNER", registrationDTO.getEmail(), "OWNER_REGISTRATION", e);
             throw e;
         }
     }
@@ -71,6 +85,14 @@ public class OwnerController {
             String token = ownerService.loginOwner(loginDTO);
             OwnerDTO owner = ownerService.getOwnerByEmail(loginDTO.getEmail());
 
+            // Log successful login
+            actionLogger.logOwnerAction(
+                owner.getId(),
+                owner.getEmail(),
+                "OWNER_LOGIN",
+                "Login successful"
+            );
+
             AuthResponseDTO response = new AuthResponseDTO();
             response.setOwnerId(owner.getId());
             response.setEmail(owner.getEmail());
@@ -81,6 +103,7 @@ public class OwnerController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Login failed: {}", e.getMessage());
+            actionLogger.logError("OWNER", loginDTO.getEmail(), "OWNER_LOGIN", e);
             throw e;
         }
     }
@@ -113,9 +136,19 @@ public class OwnerController {
             OwnerDTO currentOwner = ownerService.getOwnerByEmail(email);
 
             OwnerDTO updated = ownerService.updateOwnerProfile(currentOwner.getId(), ownerDTO);
+            
+            // Log profile update
+            actionLogger.logOwnerAction(
+                updated.getId(),
+                email,
+                "UPDATE_PROFILE",
+                "Profile information updated"
+            );
+            
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             log.error("Failed to update profile: {}", e.getMessage());
+            actionLogger.logError("OWNER", ownerDTO.getEmail(), "UPDATE_PROFILE", e);
             throw e;
         }
     }
@@ -169,6 +202,15 @@ public class OwnerController {
             Request savedRequest = adminRequestService.createChangeRequest(changeRequest);
             log.info("Change request created successfully for property {} by owner {}", 
                 changeRequest.getProperty().getId(), email);
+            
+            // Log change request creation
+            actionLogger.logOwnerAction(
+                ownerDTO.getId(),
+                email,
+                "CREATE_CHANGE_REQUEST",
+                String.format("PropertyID: %d, RequestID: %d, Type: %s",
+                    changeRequest.getProperty().getId(), savedRequest.getId(), changeRequest.getChangeType())
+            );
             
             return ResponseEntity.status(HttpStatus.CREATED).body(savedRequest);
         } catch (Exception e) {
