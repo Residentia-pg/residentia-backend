@@ -117,27 +117,14 @@ public class AuthController {
             } 
             // ADMIN LOGIN
             else if ("ADMIN".equalsIgnoreCase(role)) {
-                Optional<Admin> admin = adminRepository.findByEmail(email);
-                
-                if (admin.isPresent() && passwordEncoder.matches(password, admin.get().getPasswordHash())) {
-                    Admin adminEntity = admin.get();
-                    
-                    if (!adminEntity.getIsActive()) {
-                        log.warn("Inactive admin attempted login: {}", email);
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("success", false, "message", "Admin account is deactivated"));
-                    }
-                    
-                    String token = jwtTokenProvider.generateToken(
-                        adminEntity.getId().longValue(), 
-                        email, 
-                        "ADMIN"
-                    );
+                // Check against hardcoded admin credentials
+                if ("admin@residentia.com".equals(email) && "Admin@123".equals(password)) {
+                    String token = jwtTokenProvider.generateToken(1L, email, "ADMIN");
                     
                     AuthResponseDTO authResponse = new AuthResponseDTO();
-                    authResponse.setAdminId(adminEntity.getId().longValue());
-                    authResponse.setEmail(adminEntity.getEmail());
-                    authResponse.setName(adminEntity.getName());
+                    authResponse.setAdminId(1L);
+                    authResponse.setEmail(email);
+                    authResponse.setName("System Admin");
                     authResponse.setToken(token);
                     authResponse.setMessage("Admin login successful!");
                     

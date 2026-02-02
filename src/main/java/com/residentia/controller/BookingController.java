@@ -83,6 +83,38 @@ public class BookingController {
         }
     }
 
+    @PutMapping("/bookings/{bookingId}/confirm")
+    @Operation(summary = "Confirm booking", description = "Owner confirms a pending booking")
+    @ApiResponse(responseCode = "200", description = "Booking confirmed successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId) {
+        try {
+            logger.info("Owner confirming booking: {}", bookingId);
+            bookingService.restoreBooking(bookingId);
+            BookingDTO response = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Failed to confirm booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/bookings/{bookingId}/reject")
+    @Operation(summary = "Reject booking", description = "Owner rejects a pending booking")
+    @ApiResponse(responseCode = "200", description = "Booking rejected successfully")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId) {
+        try {
+            logger.info("Owner rejecting booking: {}", bookingId);
+            bookingService.cancelBooking(bookingId);
+            BookingDTO response = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Failed to reject booking: {}", e.getMessage());
+            throw e;
+        }
+    }
+
     @DeleteMapping("/bookings/{bookingId}")
     @Operation(summary = "Delete booking", description = "Delete a booking record")
     @ApiResponse(responseCode = "200", description = "Booking deleted successfully")

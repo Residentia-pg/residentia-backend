@@ -59,9 +59,11 @@ public class AdminRequestService {
         
         request.setStatus("APPROVED");
         
-        // Apply changes to property if it's an UPDATE request
+        // Apply changes based on change type
         if ("UPDATE".equalsIgnoreCase(request.getChangeType())) {
             applyChangesToProperty(request);
+        } else if ("CREATE".equalsIgnoreCase(request.getChangeType())) {
+            createPropertyFromRequest(request);
         }
         
         return requestRepository.save(request);
@@ -167,4 +169,88 @@ public class AdminRequestService {
             throw new RuntimeException("Failed to apply changes to property", e);
         }
     }
-}
+
+    /**
+     * Create a new property from CREATE request details
+     */
+    private void createPropertyFromRequest(Request request) {
+        try {
+            Property tempProperty = request.getProperty();
+            String changeDetailsJson = request.getChangeDetails();
+            
+            // Parse JSON string to Map
+            Map<String, Object> changes = objectMapper.readValue(changeDetailsJson, Map.class);
+            
+            log.info("Creating property from request for owner {}", request.getOwner().getId());
+            
+            // Update the temporary property with all details from the request
+            for (Map.Entry<String, Object> entry : changes.entrySet()) {
+                String fieldName = entry.getKey();
+                Object value = entry.getValue();
+                
+                if (value == null) continue;
+                
+                switch (fieldName.toLowerCase()) {
+                    case "propertyname":
+                        tempProperty.setPropertyName((String) value);
+                        break;
+                    case "address":
+                        tempProperty.setAddress((String) value);
+                        break;
+                    case "city":
+                        tempProperty.setCity((String) value);
+                        break;
+                    case "state":
+                        tempProperty.setState((String) value);
+                        break;
+                    case "pincode":
+                        tempProperty.setPincode((String) value);
+                        break;
+                    case "rentamount":
+                        if (value instanceof Number) {
+                            tempProperty.setRentAmount(((Number) value).intValue());
+                        }
+                        break;
+                    case "sharingtype":
+                        tempProperty.setSharingType((String) value);
+                        break;
+                    case "maxcapacity":
+                        if (value instanceof Number) {
+                            tempProperty.setMaxCapacity(((Number) value).intValue());
+                        }
+                        break;
+                    case "availablebeds":
+                        if (value instanceof Number) {
+                            tempProperty.setAvailableBeds(((Number) value).intValue());
+                        }
+                        break;
+                    case "foodincluded":
+                        tempProperty.setFoodIncluded((Boolean) value);
+                        break;
+                    case "description":
+                        tempProperty.setDescription((String) value);
+                        break;
+                    case "maplink":
+                        tempProperty.setMapLink((String) value);
+                        break;
+                    case "imageurl":
+                        tempProperty.setImageUrl((String) value);
+                        break;
+                    case "amenities":
+                        tempProperty.setAmenities((String) value);
+                        break;
+                }
+            }
+            
+            // Set status to ACTIVE after approval
+            tempProperty.setStatus("ACTIVE");
+            
+            // Save the fully populated property
+            propertyRepository.save(tempProperty);
+            log.info("Property {} created successfully after approval", tempProperty.getId());
+            
+        } catch (Exception e) {
+            log.error("Error creating property from request: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create property from request", e);
+        }
+    }}

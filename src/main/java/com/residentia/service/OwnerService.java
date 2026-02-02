@@ -82,6 +82,15 @@ public class OwnerService {
         return convertToDTO(owner);
     }
 
+    public OwnerDTO getOwnerById(Long ownerId) {
+        log.info("Fetching owner with id: {}", ownerId);
+        
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+        
+        return convertToDTO(owner);
+    }
+
     public OwnerDTO updateOwnerProfile(Long ownerId, OwnerDTO ownerDTO) {
         log.info("Updating owner profile: {}", ownerId);
         

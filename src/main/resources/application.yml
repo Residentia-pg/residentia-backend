@@ -3,10 +3,13 @@ spring:
     name: residentia-backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/residentia_pg?createDatabaseIfNotExist=true
-    username: D4_93016_Harshal
-    password: Cyborg@710
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/residentia_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:manager}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 5
 
   jpa:
     hibernate:
@@ -25,8 +28,29 @@ spring:
       allow-credentials: true
       max-age: 3600
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hspatil222002@gmail.com
+    password: wrbhlpyrnefljvig
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 server:
-  port: 8888
+  port: ${PORT:8888}
   servlet:
     context-path: /
 
@@ -39,3 +63,6 @@ logging:
     com.residentia: DEBUG
     org.springframework.web: INFO
     org.springframework.security: DEBUG
+  dotnet:
+    enabled: false  # Set to true to enable .NET logging service integration
+    url: http://localhost:5000

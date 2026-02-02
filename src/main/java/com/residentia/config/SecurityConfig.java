@@ -47,20 +47,22 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-            .exceptionHandling()
+        http
+            .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            .and()
-            .sessionManagement()
+            )
+            .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .cors()
-            .and()
+            )
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authz -> authz
                 // ===== PUBLIC ENDPOINTS - NO AUTH REQUIRED =====
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/register/client").permitAll()
                 .requestMatchers("/api/auth/register/owner").permitAll()
+                // File upload and image serving
+                .requestMatchers("/api/files/**").permitAll()
                 // Legacy endpoints (for backward compatibility)
                 .requestMatchers("/api/owner/register", "/api/owner/login").permitAll()
                 // Swagger/API documentation

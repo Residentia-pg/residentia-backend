@@ -12,15 +12,15 @@ import com.residentia.entity.Owner;
 import com.residentia.entity.Property;
 
 
-public interface PgRepository extends JpaRepository<Pg,Integer>
+public interface PgRepository extends JpaRepository<Property,Integer>
 {
 	long countByStatus(String status);
 
-	List<Pg> findByOwner(Owner owner);
+	List<Property> findByOwner(Owner owner);
 	
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("""
-	    update Pg p
+	    update Property p
 	    set p.rentAmount = :rent,
 	        p.city = :city
 	    where p.id = :id

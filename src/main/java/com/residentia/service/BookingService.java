@@ -41,10 +41,17 @@ public class BookingService {
         // Dates & amount
         if (bookingDTO.getCheckInDate() != null) booking.setCheckInDate(bookingDTO.getCheckInDate());
         if (bookingDTO.getCheckOutDate() != null) booking.setCheckOutDate(bookingDTO.getCheckOutDate());
-        booking.setAmount(bookingDTO.getAmount() != null ? bookingDTO.getAmount() : 0.0);
+        
+        // Use property's rent amount if booking amount not provided
+        Double amount = bookingDTO.getAmount();
+        if (amount == null || amount == 0.0) {
+            amount = property.getRentAmount() != null ? property.getRentAmount().doubleValue() : 0.0;
+        }
+        booking.setAmount(amount);
         booking.setNotes(bookingDTO.getNotes());
 
         booking.setStatus(bookingDTO.getStatus() != null ? bookingDTO.getStatus() : "PENDING");
+        booking.setPaymentStatus("PENDING"); // Initialize payment status
 
         return bookingRepository.save(booking);
     }
@@ -65,7 +72,9 @@ public class BookingService {
     }
 
     public List<BookingDTO> getBookingsByClientEmail(String email) {
+        log.info("🔍 Fetching bookings for client email: {}", email);
         List<Booking> bookings = bookingRepository.findByTenantEmail(email);
+        log.info("✅ Found {} bookings for {}", bookings.size(), email);
         return bookings.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -125,7 +134,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    // ✅ UPDATED: Enhanced convertToDTO with canReview logic
+    // ✅ UPDATED: Enhanced convertToDTO with canReview logic and payment fields
     private BookingDTO convertToDTO(Booking booking) {
         BookingDTO dto = new BookingDTO();
         dto.setBookingId(booking.getId());
@@ -144,6 +153,12 @@ public class BookingService {
         dto.setAmount(booking.getAmount());
         dto.setStatus(booking.getStatus());
         dto.setNotes(booking.getNotes());
+        
+        // Payment fields
+        dto.setRazorpayOrderId(booking.getRazorpayOrderId());
+        dto.setRazorpayPaymentId(booking.getRazorpayPaymentId());
+        dto.setRazorpaySignature(booking.getRazorpaySignature());
+        dto.setPaymentStatus(booking.getPaymentStatus());
         
         // ✅ Set canReview flag
         // Logic: Can review if booking is CONFIRMED and checkout date has passed

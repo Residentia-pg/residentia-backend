@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "bookings")
@@ -36,12 +37,15 @@ public class Booking {
     private String tenantPhone;
 
     @Column(name = "booking_date")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime bookingDate;
 
     @Column(name = "check_in_date")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime checkInDate;
 
     @Column(name = "check_out_date")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime checkOutDate;
 
     @Column(name = "amount")
@@ -56,7 +60,21 @@ public class Booking {
     @Column(name = "payment_id")
     private Long paymentId;
 
+    // Razorpay payment fields
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
+    @Column(name = "razorpay_signature")
+    private String razorpaySignature;
+
+    @Column(name = "payment_status")
+    private String paymentStatus; // PENDING, PAID, FAILED
+
     @Column(name = "created_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime createdAt;
 
     @PrePersist

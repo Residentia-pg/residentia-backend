@@ -2,6 +2,7 @@ package com.residentia.controller;
 
 import com.residentia.dto.PropertyDTO;
 import com.residentia.entity.Property;
+import com.residentia.entity.Request;
 import com.residentia.service.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,8 +31,8 @@ public class PropertyController {
     private PropertyService propertyService;
 
     @PostMapping("/pgs")
-    @Operation(summary = "Create a new property", description = "Add a new property/PG listing")
-    @ApiResponse(responseCode = "201", description = "Property created successfully")
+    @Operation(summary = "Submit new property request", description = "Submit a new property/PG listing for admin approval")
+    @ApiResponse(responseCode = "201", description = "Property request submitted successfully")
     @ApiResponse(responseCode = "404", description = "Owner not found")
     public ResponseEntity<?> createProperty(@RequestBody PropertyDTO propertyDTO, HttpServletRequest request) {
         try {
@@ -39,19 +40,19 @@ public class PropertyController {
             if (ownerId == null) {
                 throw new RuntimeException("Owner ID not found in request");
             }
-            Property property = propertyService.createProperty(ownerId, propertyDTO);
+            
+            // Create a pending request for admin approval instead of directly creating the property
+            Request createdRequest = propertyService.createPropertyRequest(ownerId, propertyDTO);
 
+            // Return a response indicating the request is pending
             PropertyDTO response = new PropertyDTO();
-            response.setPropertyId(property.getId());
-            response.setOwnerId(property.getOwner().getId());
-            response.setPropertyName(property.getPropertyName());
-            response.setCity(property.getCity());
-            response.setRentAmount(Double.valueOf(property.getRentAmount()));
-            response.setStatus(property.getStatus());
+            response.setPropertyName(propertyDTO.getPropertyName());
+            response.setCity(propertyDTO.getCity());
+            response.setStatus("PENDING");
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
-            log.error("Failed to create property: {}", e.getMessage());
+            log.error("Failed to create property request: {}", e.getMessage());
             throw e;
         }
     }
@@ -88,24 +89,28 @@ public class PropertyController {
     }
 
     @PutMapping("/pgs/{propertyId}")
-    @Operation(summary = "Update property", description = "Update property/PG listing details")
-    @ApiResponse(responseCode = "200", description = "Property updated successfully")
+    @Operation(summary = "Submit property update request", description = "Submit property/PG listing update for admin approval")
+    @ApiResponse(responseCode = "201", description = "Update request submitted successfully")
     @ApiResponse(responseCode = "404", description = "Property not found")
-    public ResponseEntity<?> updateProperty(@PathVariable Long propertyId, @RequestBody PropertyDTO propertyDTO) {
+    public ResponseEntity<?> updateProperty(@PathVariable Long propertyId, @RequestBody PropertyDTO propertyDTO, HttpServletRequest request) {
         try {
-            Property property = propertyService.updateProperty(propertyId, propertyDTO);
+            Long ownerId = (Long) request.getAttribute("ownerId");
+            if (ownerId == null) {
+                throw new RuntimeException("Owner ID not found in request");
+            }
+
+            // Create a change request for admin approval instead of directly updating
+            Request changeRequest = propertyService.createPropertyUpdateRequest(ownerId, propertyId, propertyDTO);
 
             PropertyDTO response = new PropertyDTO();
-            response.setPropertyId(property.getId());
-            response.setOwnerId(property.getOwner().getId());
-            response.setPropertyName(property.getPropertyName());
-            response.setCity(property.getCity());
-            response.setRentAmount(Double.valueOf(property.getRentAmount()));
-            response.setStatus(property.getStatus());
+            response.setPropertyId(propertyId);
+            response.setPropertyName(propertyDTO.getPropertyName());
+            response.setCity(propertyDTO.getCity());
+            response.setStatus("PENDING");
 
-            return ResponseEntity.ok(response);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
-            log.error("Failed to update property: {}", e.getMessage());
+            log.error("Failed to create update request: {}", e.getMessage());
             throw e;
         }
     }

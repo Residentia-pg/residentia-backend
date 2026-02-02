@@ -3,6 +3,7 @@ package com.residentia.controller;
 import com.residentia.dto.BookingDTO;
 import com.residentia.entity.Booking;
 import com.residentia.entity.RegularUser;
+import com.residentia.logging.ActionLogger;
 import com.residentia.repository.RegularUserRepository;
 import com.residentia.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,13 +30,16 @@ public class ClientBookingController {
     @Autowired
     private RegularUserRepository regularUserRepository;
 
+    @Autowired
+    private ActionLogger actionLogger;
+
     @PostMapping("/properties/{propertyId}/bookings")
     @Operation(summary = "Create booking for a property")
     public ResponseEntity<?> createBooking(@PathVariable Long propertyId,
                                            @RequestBody BookingDTO bookingDTO,
                                            HttpServletRequest request) {
+        String email = (String) request.getAttribute("email");
         try {
-            String email = (String) request.getAttribute("email");
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
             }
@@ -43,18 +47,30 @@ public class ClientBookingController {
             RegularUser user = regularUserRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
+
             // Fill tenant info from logged-in user if not provided
             if (bookingDTO.getTenantName() == null) bookingDTO.setTenantName(user.getName());
             if (bookingDTO.getTenantEmail() == null) bookingDTO.setTenantEmail(user.getEmail());
             if (bookingDTO.getTenantPhone() == null) bookingDTO.setTenantPhone(user.getMobileNumber());
+            log.info("📝 Creating booking for user: {} ({})", user.getName(), user.getEmail());
 
             Booking booking = bookingService.createBooking(propertyId, bookingDTO);
+
+            // Log client booking action
+            actionLogger.logClientAction(
+                user.getId(),
+                user.getEmail(),
+                "CREATE_BOOKING",
+                String.format("PropertyID: %d, BookingID: %d, CheckIn: %s, CheckOut: %s",
+                    propertyId, booking.getId(), bookingDTO.getCheckInDate(), bookingDTO.getCheckOutDate())
+            );
+
 
             BookingDTO response = bookingService.getBookingById(booking.getId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            log.error("Failed to create booking: {}", e.getMessage(), e);
+            actionLogger.logError("CLIENT", email != null ? email : "UNKNOWN", "CREATE_BOOKING", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -62,12 +78,16 @@ public class ClientBookingController {
     public ResponseEntity<?> getClientBookings(HttpServletRequest request) {
         try {
             String email = (String) request.getAttribute("email");
+            log.info("🔐 Client bookings request. Email from token: {}", email);
             if (email == null) {
+                log.warn("⚠️ No email found in request attributes");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
             }
             List<BookingDTO> bookings = bookingService.getBookingsByClientEmail(email);
+            log.info("📋 Returning {} bookings for {}", bookings.size(), email);
             return ResponseEntity.ok(bookings);
         } catch (Exception e) {
+            log.error("❌ Error fetching client bookings: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

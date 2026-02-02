@@ -18,18 +18,24 @@ public class BookingDTO {
     private String tenantPhone;
     
     // ✅ Format dates for JSON serialization
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime bookingDate;
     
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime checkInDate;
     
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime checkOutDate;
     
     private Double amount;
     private String status;
     private String notes;
+    
+    // Razorpay payment fields
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+    private String razorpaySignature;
+    private String paymentStatus;
     
     // ✅ Add canReview field for frontend
     private Boolean canReview;
