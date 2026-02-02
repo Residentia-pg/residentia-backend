@@ -1,4 +1,8 @@
+
 package com.residentia.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,6 +15,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonSerialize(as = Owner.class)
 public class Owner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

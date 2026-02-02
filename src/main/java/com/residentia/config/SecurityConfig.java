@@ -1,7 +1,6 @@
 package com.residentia.config;
 
-import com.residentia.config.JwtAuthenticationEntryPoint;
-import com.residentia.config.JwtAuthenticationFilter;
+import com.residentia.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +26,9 @@ public class SecurityConfig {
     
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,7 +42,7 @@ public class SecurityConfig {
     
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+        return new JwtAuthenticationFilter(jwtTokenProvider);
     }
     
     @Bean
@@ -55,23 +57,26 @@ public class SecurityConfig {
             .cors()
             .and()
             .authorizeHttpRequests(authz -> authz
-                // Public endpoints - NO auth required
+                // ===== PUBLIC ENDPOINTS - NO AUTH REQUIRED =====
                 .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register/client").permitAll()
+                .requestMatchers("/api/auth/register/owner").permitAll()
+                // Legacy endpoints (for backward compatibility)
                 .requestMatchers("/api/owner/register", "/api/owner/login").permitAll()
+                // Swagger/API documentation
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                // Test endpoints
                 .requestMatchers("/api/test/**").permitAll()
+                // CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Owner endpoints - Require auth (JWT token needed)
+                // Public client endpoints (property browsing without login)
+                .requestMatchers(HttpMethod.GET, "/api/client/properties").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/client/properties/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/client/search/**").permitAll()
+                // ===== PROTECTED ENDPOINTS - AUTH REQUIRED =====
                 .requestMatchers("/api/owner/**").authenticated()
-                
-                // Admin endpoints - Require auth (JWT token needed)
                 .requestMatchers("/api/admin/**").authenticated()
-                
-                // Client endpoints - Require auth (JWT token needed)
                 .requestMatchers("/api/client/**").authenticated()
-                
-                // Anything else - Require auth
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -82,6 +87,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        
         // Allow all localhost variations for development
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:*",

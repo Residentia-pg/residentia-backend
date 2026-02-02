@@ -15,12 +15,17 @@
 	import lombok.NoArgsConstructor;
 	import lombok.Setter;
 	
+	import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+	import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 	@Entity
 	@Table(name = "regular_users")
 	@Getter
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	@JsonSerialize(as = RegularUser.class)
 	public class RegularUser {
 	
 	    @Id
