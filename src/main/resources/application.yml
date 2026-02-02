@@ -58,6 +58,16 @@ jwt:
   secret: my-super-secret-key-for-jwt-token-generation-residentia-application-2024-secure-512-bits-minimum-requirement
   expiration: 86400000
 
+# Cloudinary Configuration (OPTIONAL)
+# The application works WITHOUT Cloudinary - images will be stored locally
+# Sign up for free at https://cloudinary.com
+# Free tier: 25 credits/month, 25GB storage, 25GB bandwidth
+cloudinary:
+  enabled: ${CLOUDINARY_ENABLED:false}  # Set to true to enable Cloudinary
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:your-cloud-name}
+  api-key: ${CLOUDINARY_API_KEY:your-api-key}
+  api-secret: ${CLOUDINARY_API_SECRET:your-api-secret}
+
 logging:
   level:
     com.residentia: DEBUG
