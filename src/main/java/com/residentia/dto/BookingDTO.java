@@ -39,4 +39,7 @@ public class BookingDTO {
     
     // ✅ Add canReview field for frontend
     private Boolean canReview;
+    
+    // ✅ Add canPay field to show "Pay Now" button
+    private Boolean canPay;
 }

@@ -38,5 +38,11 @@ public class AdminPgBookingController {
     public ResponseEntity<Booking> restore(@PathVariable Long id) {
         return ResponseEntity.ok(service.restoreBooking(id));
     }
+    
+    // TODO: Implement fixPaymentStatus method in BookingService
+    // @PutMapping("/{id}/fix-payment-status")
+    // public ResponseEntity<?> fixPaymentStatus(@PathVariable Long id) {
+    //     return ResponseEntity.ok(service.fixPaymentStatus(id));
+    // }
 
 }

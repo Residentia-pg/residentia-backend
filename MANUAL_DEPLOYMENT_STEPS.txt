@@ -1,0 +1,84 @@
+===============================================
+MANUAL RDS DEPLOYMENT - SIMPLE STEPS
+===============================================
+
+Your RDS Details:
+- Endpoint: database-1.c7mm0eumyni6.ca-central-1.rds.amazonaws.com
+- Username: Residentia
+- Port: 3306
+- Database: residentia_db (CREATED ✓)
+
+===============================================
+STEP 1: Import Schema
+===============================================
+
+Copy and paste this entire command, press Enter, then enter password:
+
+mysql -h database-1.c7mm0eumyni6.ca-central-1.rds.amazonaws.com -P 3306 -u Residentia -p
+
+Then in MySQL prompt, run:
+USE residentia_db;
+source src/main/resources/schema.sql;
+SHOW TABLES;
+exit;
+
+OR manually:
+
+1. Open schema.sql in notepad
+2. Copy all SQL content
+3. Run: mysql -h database-1.c7mm0eumyni6.ca-central-1.rds.amazonaws.com -P 3306 -u Residentia -p residentia_db
+4. Paste all SQL and press Enter
+5. Type: SHOW TABLES;
+6. Type: exit;
+
+===============================================
+STEP 2: Verify Tables Created
+===============================================
+
+mysql -h database-1.c7mm0eumyni6.ca-central-1.rds.amazonaws.com -P 3306 -u Residentia -p -e "USE residentia_db; SHOW TABLES;"
+
+Expected: 7 tables (admins, bookings, change_requests, pg_owners, pgs, regular_users, reviews)
+
+===============================================
+STEP 3: Set Environment Variables
+===============================================
+
+Copy these commands and run them:
+
+$env:SPRING_DATASOURCE_URL="jdbc:mysql://database-1.c7mm0eumyni6.ca-central-1.rds.amazonaws.com:3306/residentia_db?useSSL=true&serverTimezone=UTC"
+$env:SPRING_DATASOURCE_USERNAME="Residentia"
+$env:SPRING_DATASOURCE_PASSWORD="YOUR_RDS_PASSWORD"
+
+Replace YOUR_RDS_PASSWORD with actual password!
+
+===============================================
+STEP 4: Start Application with RDS
+===============================================
+
+mvn spring-boot:run
+
+Your application will now use AWS RDS!
+
+===============================================
+STEP 5: Rollback to Local (if needed)
+===============================================
+
+Remove-Item Env:SPRING_DATASOURCE_URL
+Remove-Item Env:SPRING_DATASOURCE_USERNAME
+Remove-Item Env:SPRING_DATASOURCE_PASSWORD
+
+mvn spring-boot:run
+
+===============================================
+VERIFICATION
+===============================================
+
+After starting app, test:
+- Login/Registration
+- Create property
+- View properties
+- Create booking
+
+All data will be stored in AWS RDS!
+
+===============================================

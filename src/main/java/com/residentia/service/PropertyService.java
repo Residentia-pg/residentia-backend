@@ -61,12 +61,24 @@ public class PropertyService {
         Owner owner = ownerRepository.findById(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
 
-        // Create a temporary property object (not saved) to attach to the request
+        // Create a temporary property object with all required fields
         Property tempProperty = new Property();
         tempProperty.setOwner(owner);
         tempProperty.setPropertyName(propertyDTO.getPropertyName());
+        tempProperty.setAddress(propertyDTO.getAddress()); // Required field
+        tempProperty.setCity(propertyDTO.getCity());
+        tempProperty.setState(propertyDTO.getState());
+        tempProperty.setPincode(propertyDTO.getPincode());
+        tempProperty.setRentAmount(propertyDTO.getRentAmount() != null ? propertyDTO.getRentAmount().intValue() : 0);
+        tempProperty.setSharingType(propertyDTO.getSharingType());
+        tempProperty.setMaxCapacity(propertyDTO.getMaxCapacity() != null ? propertyDTO.getMaxCapacity() : 0);
+        tempProperty.setAvailableBeds(propertyDTO.getAvailableBeds() != null ? propertyDTO.getAvailableBeds() : 0);
+        tempProperty.setFoodIncluded(propertyDTO.getFoodIncluded() != null ? propertyDTO.getFoodIncluded() : false);
+        tempProperty.setDescription(propertyDTO.getDescription());
+        tempProperty.setAmenities(propertyDTO.getAmenities());
+        tempProperty.setImageUrl(propertyDTO.getImageUrl());
         tempProperty.setStatus("PENDING");
-        tempProperty = propertyRepository.save(tempProperty); // Save with minimal info
+        tempProperty = propertyRepository.save(tempProperty);
 
         // Create request with property details in JSON
         Request request = new Request();

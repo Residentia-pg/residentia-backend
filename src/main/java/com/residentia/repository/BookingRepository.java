@@ -13,5 +13,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByPropertyOwnerId(Long ownerId);
     List<Booking> findByPropertyId(Long propertyId);
     List<Booking> findByTenantEmail(String tenantEmail);
+    List<Booking> findByTenantEmailIgnoreCase(String tenantEmail);
     Optional<Booking> findByRazorpayOrderId(String razorpayOrderId);
 }

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploaded Images - Residentia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .info-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .info-box code {
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+        
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-card:hover img {
+            transform: scale(1.1);
+        }
+        
+        .image-info {
+            padding: 15px;
+        }
+        
+        .image-name {
+            font-size: 0.85em;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .image-url {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        
+        .copy-btn:active {
+            background: #4451b8;
+        }
+        
+        .open-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.3s ease;
+        }
+        
+        .open-btn:hover {
+            background: #059669;
+        }
+        
+        .loading {
+            color: white;
+            text-align: center;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .success-toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Uploaded Images Gallery</h1>
+        <p class="subtitle">Your property images stored locally</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="imageCount">0</div>
+                <div class="label">Total Images</div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h2>📍 Image Location</h2>
+            <p><strong>Physical Path:</strong> <code>server/residentia-backend/uploads/properties/</code></p>
+            <p><strong>API Endpoint:</strong> <code>http://localhost:8888/api/files/images/{filename}</code></p>
+            <p><strong>Storage Type:</strong> Local Filesystem (Cloudinary optional)</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading images...
+        </div>
+        
+        <div id="imageGrid" class="image-grid" style="display: none;"></div>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+    
+    <div id="toast" class="success-toast">✓ URL copied to clipboard!</div>
+    
+    <script>
+        const images = [
+            '2fd6da7c-e2d4-44c9-8ee9-f34018bac7c8.webp',
+            '319d40a2-2937-4394-9d1d-472a6d74cc72.jpeg',
+            '51e2b07b-f119-4b40-a20f-faa181d7d7ed.jpg',
+            '67db95d4-e4ca-411f-a04d-67b1d60e8f02.jpg',
+            '819355fc-fb82-495f-87ca-5d88e2c64d53.jpg',
+            '8cc8b91e-a5e7-4250-a1dc-a36db14dda8f.jpeg',
+            'a34857a8-83f4-48dc-a0a0-307b49737b6d.jpg',
+            'dd91abb2-931b-43d5-ab7c-e431cc90ffa3.jpg',
+            'e6dca4f6-a1b5-4738-be52-c62711932c08.jpg',
+            'faab191b-d4e1-4b3b-a806-74bf3edcc8a7.jpg'
+        ];
+        
+        const baseUrl = 'http://localhost:8888/api/files/images/';
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            });
+        }
+        
+        function openImage(url) {
+            window.open(url, '_blank');
+        }
+        
+        function loadImages() {
+            const grid = document.getElementById('imageGrid');
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            
+            document.getElementById('imageCount').textContent = images.length;
+            
+            let loadedCount = 0;
+            let errorCount = 0;
+            
+            images.forEach((filename, index) => {
+                const imageUrl = baseUrl + filename;
+                
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                card.innerHTML = `
+                    <div class="image-wrapper">
+                        <img src="${imageUrl}" alt="${filename}" 
+                             onload="imageLoaded(${index})"
+                             onerror="imageError(${index})">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${filename}</div>
+                        <div class="image-url">
+                            <button class="copy-btn" onclick="copyToClipboard('${imageUrl}')">
+                                📋 Copy URL
+                            </button>
+                            <button class="open-btn" onclick="openImage('${imageUrl}')">
+                                🔗 Open
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            window.imageLoaded = function(index) {
+                loadedCount++;
+                if (loadedCount + errorCount === images.length) {
+                    loading.style.display = 'none';
+                    grid.style.display = 'grid';
+                    if (errorCount > 0) {
+                        errorDiv.textContent = `⚠️ ${errorCount} image(s) failed to load. Make sure the server is running on http://localhost:8888`;
+                        errorDiv.style.display = 'block';
+                    }
+                }
+            };
+            
+            window.imageError = function(index) {
+                errorCount++;
+                if (loadedCount + errorCount === images.length) {
+                    loading.style.display = 'none';
+                    if (loadedCount > 0) {
+                        grid.style.display = 'grid';
+                    }
+                    errorDiv.textContent = `❌ Error loading images. Make sure the server is running on http://localhost:8888`;
+                    errorDiv.style.display = 'block';
+                }
+            };
+            
+            // Timeout fallback
+            setTimeout(() => {
+                if (loading.style.display !== 'none') {
+                    loading.style.display = 'none';
+                    grid.style.display = 'grid';
+                }
+            }, 5000);
+        }
+        
+        // Load images on page load
+        window.addEventListener('load', loadImages);
+    </script>
+</body>
+</html>

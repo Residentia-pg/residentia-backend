@@ -73,8 +73,19 @@ public class BookingService {
 
     public List<BookingDTO> getBookingsByClientEmail(String email) {
         log.info("🔍 Fetching bookings for client email: {}", email);
-        List<Booking> bookings = bookingRepository.findByTenantEmail(email);
-        log.info("✅ Found {} bookings for {}", bookings.size(), email);
+        
+        // Debug: Show ALL bookings in database
+        List<Booking> allBookings = bookingRepository.findAll();
+        log.info("📊 Total bookings in DB: {}", allBookings.size());
+        for (Booking b : allBookings) {
+            log.info("  📋 Booking #{}: tenantEmail='{}', propertyName='{}'", 
+                b.getId(), b.getTenantEmail(), b.getProperty() != null ? b.getProperty().getPropertyName() : "null");
+        }
+        
+        // Try case-insensitive search
+        List<Booking> bookings = bookingRepository.findByTenantEmailIgnoreCase(email);
+        log.info("✅ Found {} bookings for {} (case-insensitive)", bookings.size(), email);
+        
         return bookings.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -130,7 +141,9 @@ public class BookingService {
         log.info("Restoring booking: {}", bookingId);
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
-        booking.setStatus("CONFIRMED");
+        booking.setStatus("APPROVED");
+        // Keep payment status as PENDING - client needs to pay after owner approval
+        booking.setPaymentStatus("PENDING");
         return bookingRepository.save(booking);
     }
 
@@ -161,12 +174,23 @@ public class BookingService {
         dto.setPaymentStatus(booking.getPaymentStatus());
         
         // ✅ Set canReview flag
-        // Logic: Can review if booking is CONFIRMED and checkout date has passed
+        // Logic: Can review if:
+        // 1. Payment status is PAID, OR
+        // 2. Booking is CONFIRMED and checkout date has passed
         boolean canReview = false;
-        if ("CONFIRMED".equals(booking.getStatus()) && booking.getCheckOutDate() != null) {
+        if ("PAID".equals(booking.getPaymentStatus())) {
+            // Allow review once payment is completed
+            canReview = true;
+        } else if ("CONFIRMED".equals(booking.getStatus()) && booking.getCheckOutDate() != null) {
+            // Also allow review if booking is confirmed and checkout date has passed
             canReview = booking.getCheckOutDate().isBefore(LocalDateTime.now());
         }
         dto.setCanReview(canReview);
+        
+        // ✅ Set canPay flag
+        // Logic: Can pay if booking is APPROVED by owner and payment is PENDING
+        boolean canPay = "APPROVED".equals(booking.getStatus()) && "PENDING".equals(booking.getPaymentStatus());
+        dto.setCanPay(canPay);
         
         return dto;
     }

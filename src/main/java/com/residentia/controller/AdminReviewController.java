@@ -32,7 +32,7 @@ public class AdminReviewController {
     public ResponseEntity<List<Review>> getAllReviews() {
         log.info("GET /api/admin/reviews - Fetching all reviews");
         try {
-            List<Review> reviews = reviewRepository.findAll();
+            List<Review> reviews = reviewRepository.findAllWithPropertyAndUser();
             log.info("Retrieved {} reviews", reviews.size());
             return ResponseEntity.ok(reviews);
         } catch (Exception e) {
