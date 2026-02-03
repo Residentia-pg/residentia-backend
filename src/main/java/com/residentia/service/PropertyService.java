@@ -50,6 +50,7 @@ public class PropertyService {
         property.setDescription(propertyDTO.getDescription());
         property.setStatus(propertyDTO.getStatus() != null ? propertyDTO.getStatus() : "ACTIVE");
         property.setAmenities(propertyDTO.getAmenities());
+        // Image URL is stored as public Cloudinary URL - accessible by all authenticated users (owner, client, admin)
         property.setImageUrl(propertyDTO.getImageUrl());
 
         return propertyRepository.save(property);
@@ -76,6 +77,7 @@ public class PropertyService {
         tempProperty.setFoodIncluded(propertyDTO.getFoodIncluded() != null ? propertyDTO.getFoodIncluded() : false);
         tempProperty.setDescription(propertyDTO.getDescription());
         tempProperty.setAmenities(propertyDTO.getAmenities());
+        // Image URL stored as public Cloudinary URL - viewable by all users regardless of role
         tempProperty.setImageUrl(propertyDTO.getImageUrl());
         tempProperty.setStatus("PENDING");
         tempProperty = propertyRepository.save(tempProperty);

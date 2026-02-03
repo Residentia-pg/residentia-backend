@@ -54,9 +54,9 @@ jwt:
 # Cloudinary Configuration (Optional)
 # If not configured, the application will fall back to local file storage
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
-  api-key: ${CLOUDINARY_API_KEY:}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:doux976kl}
+  api-key: ${CLOUDINARY_API_KEY:553679296573887}
+  api-secret: ${CLOUDINARY_API_SECRET:xdyGM0V8Q6jBkx1I3ZNlZVoZRCc}
 
 logging:
   level:
