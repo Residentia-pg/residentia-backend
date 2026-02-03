@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["...", "jdk21"]
-
-[phases.build]
-cmds = ["mvn clean package -DskipTests"]
-
-[start]
-cmd = "java -Dserver.port=$PORT -jar target/residentia-backend-1.0.0.jar"
