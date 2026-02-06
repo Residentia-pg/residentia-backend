@@ -61,7 +61,7 @@ public class CloudinaryService {
     }
 
     /**
-     * Upload an image to Cloudinary
+     * Upload an image to Cloudinary with public access
      * @param file The file to upload
      * @param folder The folder path in Cloudinary
      * @return The URL of the uploaded image
@@ -72,19 +72,24 @@ public class CloudinaryService {
             Map uploadParams = ObjectUtils.asMap(
                 "folder", folder,
                 "resource_type", "image",
-                "transformation", ObjectUtils.asMap(
-                    "quality", "auto",
-                    "fetch_format", "auto"
-                )
+                "access_mode", "public",
+                "overwrite", false
             );
 
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             String imageUrl = (String) uploadResult.get("secure_url");
+            String publicId = (String) uploadResult.get("public_id");
+            String resourceType = (String) uploadResult.get("resource_type");
             
-            log.debug("Image uploaded to Cloudinary: {}", imageUrl);
+            log.info("✅ Image uploaded to Cloudinary with PUBLIC access");
+            log.info("   URL: {}", imageUrl);
+            log.info("   Public ID: {}", publicId);
+            log.info("   Access: PUBLIC (viewable by all authenticated users)");
+            log.debug("   Resource Type: {}", resourceType);
+            
             return imageUrl;
         } catch (IOException e) {
-            log.error("Failed to upload image to Cloudinary: {}", e.getMessage());
+            log.error("❌ Failed to upload image to Cloudinary: {}", e.getMessage());
             throw e;
         }
     }

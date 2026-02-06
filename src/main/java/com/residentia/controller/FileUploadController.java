@@ -22,9 +22,9 @@ import java.util.UUID;
 
 /**
  * Controller for handling file uploads
- * - Uses Cloudinary if configured
- * - Falls back to local storage if Cloudinary is not configured
- * - Serves existing local images for backward compatibility
+ * - Uses ONLY Cloudinary for new uploads (no local storage)
+ * - Serves existing local images for backward compatibility only
+ * - All new images are stored in the cloud
  */
 @Slf4j
 @RestController
@@ -83,39 +83,23 @@ public class FileUploadController {
                 return ResponseEntity.badRequest().body("Only image files are allowed");
             }
 
-            // Try Cloudinary first, fallback to local storage
-            if (isCloudinaryConfigured()) {
-                try {
-                    String imageUrl = cloudinaryService.uploadImage(file, CLOUDINARY_FOLDER);
-                    log.info("File uploaded successfully to Cloudinary: {}", imageUrl);
-
-                    Map<String, String> response = new HashMap<>();
-                    response.put("url", imageUrl);
-                    response.put("filename", imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
-                    return ResponseEntity.ok(response);
-                } catch (Exception e) {
-                    log.warn("Cloudinary upload failed, falling back to local storage: {}", e.getMessage());
-                }
+            // ONLY use Cloudinary - no local storage fallback
+            if (!isCloudinaryConfigured()) {
+                log.error("❌ Cloudinary is not configured! Cannot upload image.");
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Cloud storage not configured. Please configure Cloudinary credentials.");
             }
 
-            // Fallback to local storage
-            log.info("Using local storage for file upload");
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename != null && originalFilename.contains(".") 
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : ".jpg";
-            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-
-            Path filePath = Paths.get(uploadDir, uniqueFilename);
-            Files.copy(file.getInputStream(), filePath);
-
-            String fileUrl = "/api/files/images/" + uniqueFilename;
-            log.info("File uploaded successfully to local storage: {}", fileUrl);
+            // Upload to Cloudinary
+            String imageUrl = cloudinaryService.uploadImage(file, CLOUDINARY_FOLDER);
+            log.info("✅ File uploaded to Cloudinary with PUBLIC ACCESS");
+            log.info("   URL: {}", imageUrl);
+            log.info("   Accessible by: ALL USERS (owner, client, admin roles)");
+            log.info("   Storage: ☁️ CLOUD ONLY (no local copy)");
 
             Map<String, String> response = new HashMap<>();
-            response.put("url", fileUrl);
-            response.put("filename", uniqueFilename);
-
+            response.put("url", imageUrl);
+            response.put("filename", imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Failed to upload file", e);
@@ -146,36 +130,19 @@ public class FileUploadController {
                     continue;
                 }
 
+                // ONLY use Cloudinary - no local storage
+                if (!usingCloudinary) {
+                    log.error("❌ Cloudinary not configured - skipping file");
+                    continue;
+                }
+
                 String imageUrl;
                 String filename;
 
-                if (usingCloudinary) {
-                    try {
-                        imageUrl = cloudinaryService.uploadImage(file, CLOUDINARY_FOLDER);
-                        filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-                    } catch (Exception e) {
-                        log.warn("Cloudinary upload failed for file, using local storage: {}", e.getMessage());
-                        // Fallback to local
-                        String originalFilename = file.getOriginalFilename();
-                        String fileExtension = originalFilename != null && originalFilename.contains(".") 
-                            ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                            : ".jpg";
-                        filename = UUID.randomUUID().toString() + fileExtension;
-                        Path filePath = Paths.get(uploadDir, filename);
-                        Files.copy(file.getInputStream(), filePath);
-                        imageUrl = "/api/files/images/" + filename;
-                    }
-                } else {
-                    // Local storage
-                    String originalFilename = file.getOriginalFilename();
-                    String fileExtension = originalFilename != null && originalFilename.contains(".") 
-                        ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                        : ".jpg";
-                    filename = UUID.randomUUID().toString() + fileExtension;
-                    Path filePath = Paths.get(uploadDir, filename);
-                    Files.copy(file.getInputStream(), filePath);
-                    imageUrl = "/api/files/images/" + filename;
-                }
+                // Upload to Cloudinary (no fallback)
+                imageUrl = cloudinaryService.uploadImage(file, CLOUDINARY_FOLDER);
+                filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+                log.info("☁️ File uploaded to Cloudinary: {}", imageUrl);
 
                 Map<String, String> fileInfo = new HashMap<>();
                 fileInfo.put("url", imageUrl);

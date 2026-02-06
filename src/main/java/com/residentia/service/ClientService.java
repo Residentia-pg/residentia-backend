@@ -107,6 +107,8 @@ public class ClientService {
 
     /**
      * Convert Property to PropertyDTO
+     * All property data including image URLs are accessible to clients.
+     * Image URLs are public Cloudinary URLs that work for all authenticated users.
      */
     private PropertyDTO convertToDTO(Property property) {
         PropertyDTO dto = new PropertyDTO();
