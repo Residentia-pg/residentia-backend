@@ -204,12 +204,12 @@ Update [application.yml](src/main/resources/application.yml):
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/residentia_db
-    username: your_username
-    password: your_password
+    username: username
+    password: password
   
   mail:
-    username: your_gmail@gmail.com
-    password: your_app_password
+    username: gmail@gmail.com
+    password: app_password
 
 jwt:
   secret: your-secure-jwt-secret-key-minimum-512-bits
@@ -217,9 +217,9 @@ jwt:
 
 # Optional Cloudinary configuration
 cloudinary:
-  cloud-name: your_cloud_name
-  api-key: your_api_key
-  api-secret: your_api_secret
+  cloud-name: cloud_name
+  api-key: api_key
+  api-secret: api_secret
 ```
 
 ### 4. Build and Run
