@@ -262,7 +262,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/residentia_db
     username: admin
-    password: your_password
+    password: password
   jpa:
     hibernate:
       ddl-auto: validate  # Options: none, validate, update, create, create-drop
@@ -311,8 +311,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: your_email@gmail.com
-    password: your_app_password  # Gmail App Password
+    username: email@gmail.com
+    password: app_password  # Gmail App Password
     properties:
       mail:
         smtp:
@@ -324,9 +324,9 @@ spring:
 #### Cloudinary Configuration (Optional)
 ```yaml
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:your_cloud_name}
-  api-key: ${CLOUDINARY_API_KEY:your_api_key}
-  api-secret: ${CLOUDINARY_API_SECRET:your_api_secret}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:cloud_name}
+  api-key: ${CLOUDINARY_API_KEY:api_key}
+  api-secret: ${CLOUDINARY_API_SECRET:api_secret}
 ```
 
 #### Logging Configuration
@@ -347,21 +347,21 @@ For production, use environment variables:
 
 ```bash
 # Database
-export DB_URL=jdbc:mysql://your-rds-endpoint:3306/residentia_db
+export DB_URL=jdbc:mysql://rds-endpoint:3306/residentia_db
 export DB_USERNAME=admin
-export DB_PASSWORD=your_password
+export DB_PASSWORD=password
 
 # JWT
-export JWT_SECRET=your-secure-jwt-secret
+export JWT_SECRET=secure-jwt-secret
 
 # Cloudinary
-export CLOUDINARY_CLOUD_NAME=your_cloud_name
-export CLOUDINARY_API_KEY=your_api_key
-export CLOUDINARY_API_SECRET=your_api_secret
+export CLOUDINARY_CLOUD_NAME=cloud_name
+export CLOUDINARY_API_KEY=api_key
+export CLOUDINARY_API_SECRET=api_secret
 
 # Email
-export MAIL_USERNAME=your_email@gmail.com
-export MAIL_PASSWORD=your_app_password
+export MAIL_USERNAME=email@gmail.com
+export MAIL_PASSWORD=app_password
 
 # Server Port
 export PORT=8888
